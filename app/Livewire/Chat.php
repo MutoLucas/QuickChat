@@ -3,7 +3,10 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\Attributes\On;
+
+use Illuminate\Support\Str;
 
 use App\Events\sendMessage;
 
@@ -14,14 +17,19 @@ use App\Models\User;
 
 class Chat extends Component
 {
+    use WithFileUploads;
+
     public $convId;
     public $newMessage;
+    public $newMidia;
     public $userId;
 
     public $messages;
 
     public function mount(){
         $this->userId = auth()->user()->id;
+        $this->newMessage = null;
+        $this->newMidia = null;
     }
 
     public function getListeners(){
@@ -50,6 +58,7 @@ class Chat extends Component
 
     public function sendNewMessage(){
         $conversation = Conversation::find($this->convId);
+
         if($conversation->user_one_id == auth()->user()->id){
             $receiver = User::find($conversation->user_two_id);
         }else{
@@ -63,15 +72,38 @@ class Chat extends Component
             $this->newMessage = null;
             session()->flash('errorSendMessage','Não foi possivel completar o envio da mensagem');
         }else{
-            if($this->newMessage){
+            if($this->newMessage || $this->newMidia){
+
+                if($this->newMidia){
+
+                    $mimeType = $this->newMidia->getMimeType();
+
+                    if(Str::startsWith($mimeType, 'image/')){
+                        $type = 'image';
+                    }elseif(Str::startsWith($mimeType, 'video/')){
+                        $type = 'video';
+                    }elseif(Str::startsWith($mimeType, 'audio/')){
+                        $type = 'audio';
+                    }
+
+                    $time = time();
+                    $random = rand(1,99999999);
+                    $extension = strtolower($this->newMidia->getClientOriginalExtension());
+                    $filename = Str::slug($this->userId) . '-' . $time . '-' . $random .'.' . $extension;
+                    $path = $this->newMidia->storePubliclyAs('midias/messages/sender/'.$this->userId,$filename,'public');
+                }
+
                 Message::create([
                     'conversation_id'=>$conversation->id,
                     'sender_id'=>auth()->user()->id,
                     'body'=>$this->newMessage,
-                    'read_sender'=>true
+                    'read_sender'=>true,
+                    'media_path'=>$path ?? null,
+                    'type'=>$type ?? 'text'
                 ]);
 
                 $this->newMessage = null;
+                $this->newMidia = null;
 
                 if($conversation->user_one_id == auth()->user()->id){
                     broadcast(new sendMessage($conversation->user_two_id,$conversation->id));
@@ -80,8 +112,6 @@ class Chat extends Component
                 }
 
                 $this->dispatch('sendMessage');
-            }else{
-                dd('Ta null padrão');
             }
         }
 
