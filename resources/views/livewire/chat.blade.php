@@ -90,10 +90,12 @@
                                     </script>
                                 @endif
                             </div>
-                            {!! \Illuminate\Support\Str::of($message->body)->replaceMatches(
-                                '/(https?:\/\/[^\s]+)/',
-                                fn ($match) => '<a href="' . $match[0] . '" target="_blank" class="text-primary text-decoration-underline">' . $match[0] . '</a>'
-                            ) !!}
+                            <div class="text-break" style="max-width: 300px">
+                                {!! \Illuminate\Support\Str::of($message->body)->replaceMatches(
+                                    '/(https?:\/\/[^\s]+)/',
+                                    fn ($match) => '<a href="' . $match[0] . '" target="_blank" class="text-primary text-decoration-underline">' . $match[0] . '</a>'
+                                ) !!}
+                            </div>
 
                         </div>
                     </div>
@@ -175,10 +177,12 @@
                                     </script>
                                 @endif
                             </div>
-                            {!! \Illuminate\Support\Str::of($message->body)->replaceMatches(
-                                '/(https?:\/\/[^\s]+)/',
-                                fn ($match) => '<a href="' . $match[0] . '" target="_blank" class="text-primary text-decoration-underline">' . $match[0] . '</a>'
-                            ) !!}
+                            <div class="text-break" style="max-width: 300px">
+                                {!! \Illuminate\Support\Str::of($message->body)->replaceMatches(
+                                    '/(https?:\/\/[^\s]+)/',
+                                    fn ($match) => '<a href="' . $match[0] . '" target="_blank" class="text-primary text-decoration-underline">' . $match[0] . '</a>'
+                                ) !!}
+                            </div>
 
                         </div>
                     </div>
@@ -201,7 +205,9 @@
         <div class="border-top p-3 d-flex align-items-center">
             <div class="input-group">
                 <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#sendMidia"><i class="bi bi-upload"></i></button>
-                <textarea wire:model="newMessage" class="form-control me-2" rows="1" placeholder="Digite sua mensagem..."></textarea>
+
+                <input type="text" wire:model="newMessage" class="form-control me-2" rows="1" placeholder="Digite sua mensagem..."></input>
+
                 <button wire:click="sendNewMessage" type="submit" class="btn btn-dark"><i class="bi bi-send"></i></button>
             </div>
         </div>
