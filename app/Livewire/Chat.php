@@ -112,6 +112,7 @@ class Chat extends Component
                 }
 
                 $this->dispatch('sendMessage');
+                $this->dispatch('scroll');
             }
         }
 
@@ -123,6 +124,7 @@ class Chat extends Component
         if($this->convId == $payload){
             $this->messages = Message::where('conversation_id', $this->convId)->get();
         }
+        $this->dispatch('scroll');
     }
 
 

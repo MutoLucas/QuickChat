@@ -12,11 +12,9 @@
         <div id="chat-messages" class="flex-grow-1 overflow-auto p-4 bg-light">
             @foreach ($messages as $message)
 
-                @if ($message->sender_id == auth()->user()->id)
+                    <div class="d-flex @if($message->sender_id == auth()->user()->id) justify-content-end @endif mb-3">
 
-                    <div class="d-flex justify-content-end mb-3">
-
-                        <div class="bg-success text-white p-2 rounded">
+                        <div class="@if($message->sender_id == auth()->user()->id) bg-success @else bg-dark @endif text-white p-2 rounded">
                             <div>
                                 @if($message->type == 'image')
                                     <img src="{{ asset('storage/'.$message->media_path) }}" class="img-fluid rounded mt-2" style="max-width: 300px;">
@@ -100,104 +98,23 @@
                         </div>
                     </div>
 
-                @else
-
-                    <div class="d-flex mb-3">
-                        <div class="bg-secondary text-white p-2 rounded">
-                            <div>
-                                @if($message->type == 'image')
-                                    <img src="{{ asset('storage/'.$message->media_path) }}" class="img-fluid rounded mt-2" style="max-width: 300px;">
-                                @elseif($message->type == 'video')
-                                    <video class="img-fluid rounded mt-2" controls style="max-width: 300px;">
-                                        <source src="{{ asset('storage/' . $message->media_path) }}" type="video/mp4">
-                                        Seu navegador não suporta vídeos.
-                                    </video>
-                                @elseif($message->type == 'audio')
-                                    <div class="audio-message" style="width: 150px">
-                                        <audio class="d-none" id="audioPlayer">
-                                            <source src="{{ asset('storage/' . $message->media_path) }}" type="audio/mpeg">
-                                            Seu navegador não suporta o elemento de áudio.
-                                        </audio>
-
-                                        <div class="d-flex align-items-center bg-dark rounded p-2 w-100 audio-bar" onclick="togglePlay()">
-                                            <div class="audio-play-btn me-2">
-                                                <i class="bi bi-play-fill" id="playPauseBtn"></i>
-                                            </div>
-                                            <div class="flex-grow-1 bg-secondary rounded-3" style="height: 6px;">
-                                                <div class="audio-progress bg-success rounded-3" style="height: 100%; width: 0%;" id="audioProgress"></div>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex justify-content-between mt-2">
-                                            <span id="currentTime">00:00</span> / <span id="totalDuration">00:00</span>
-                                        </div>
-                                    </div>
-
-
-                                    <script>
-                                        let audioPlayer = document.getElementById('audioPlayer');
-                                        let playPauseBtn = document.getElementById('playPauseBtn');
-                                        let progressBar = document.getElementById('progressBar');
-                                        let audioProgress = document.getElementById('audioProgress');
-                                        let currentTimeElem = document.getElementById('currentTime');
-                                        let totalDurationElem = document.getElementById('totalDuration');
-
-                                        audioPlayer.onloadedmetadata = function() {
-                                            totalDurationElem.innerText = formatTime(audioPlayer.duration);
-                                        };
-
-                                        audioPlayer.ontimeupdate = function() {
-                                            updateProgress();
-                                        };
-
-                                        function togglePlay() {
-                                            if (audioPlayer.paused) {
-                                                audioPlayer.play();
-                                                playPauseBtn.classList.replace('bi-play-fill', 'bi-pause-fill');
-                                            } else {
-                                                audioPlayer.pause();
-                                                playPauseBtn.classList.replace('bi-pause-fill', 'bi-play-fill');
-                                            }
-                                        }
-
-                                        function updateProgress() {
-                                            let currentTime = audioPlayer.currentTime;
-                                            let duration = audioPlayer.duration;
-                                            let progress = (currentTime / duration) * 100;
-
-                                            audioProgress.style.width = progress + '%';
-                                            currentTimeElem.innerText = formatTime(currentTime);
-                                        }
-
-                                        function formatTime(seconds) {
-                                            let minutes = Math.floor(seconds / 60);
-                                            let remainingSeconds = Math.floor(seconds % 60);
-                                            return `${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-                                        }
-                                    </script>
-                                @endif
-                            </div>
-                            <div class="text-break" style="max-width: 300px">
-                                {!! \Illuminate\Support\Str::of($message->body)->replaceMatches(
-                                    '/(https?:\/\/[^\s]+)/',
-                                    fn ($match) => '<a href="' . $match[0] . '" target="_blank" class="text-primary text-decoration-underline">' . $match[0] . '</a>'
-                                ) !!}
-                            </div>
-
-                        </div>
-                    </div>
-
-                @endif
-
             @endforeach
 
             <script>
                 function scrollToBottom() {
                     const chat = document.getElementById('chat-messages');
-                    chat.scrollTop = chat.scrollHeight;
+                    if (chat) {
+                        chat.scrollTop = chat.scrollHeight;
+                    }
                 }
 
                 window.addEventListener('load', scrollToBottom);
+
+                document.addEventListener('livewire:init',() => {
+                    Livewire.on('scroll', ()=>{
+                        setTimeout(scrollToBottom, 100);
+                    });
+                });
             </script>
 
         </div>
@@ -206,9 +123,13 @@
             <div class="input-group">
                 <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#sendMidia"><i class="bi bi-upload"></i></button>
 
-                <input type="text" wire:model="newMessage" class="form-control me-2" rows="1" placeholder="Digite sua mensagem..."></input>
+                <input type="text" wire:model.live="newMessage" class="form-control me-2" rows="1" placeholder="Digite sua mensagem..."></input>
 
-                <button wire:click="sendNewMessage" type="submit" class="btn btn-dark"><i class="bi bi-send"></i></button>
+                @if($this->newMessage)
+                    <button wire:click="sendNewMessage" type="submit" class="btn btn-dark"><i class="bi bi-send"></i></button>
+                @else
+                    <button type="button" class="btn btn-danger"><i class="bi bi-send-slash"></i></button>
+                @endif
             </div>
         </div>
 
