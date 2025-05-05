@@ -36,34 +36,40 @@ class ChatBar extends Component
 
     public function render()
     {
-
         $query = Conversation::query();
 
-        if($this->searchName){
-            $query->where(function ($q) {
-                $q->whereHas('initiator', fn($q) =>
-                    $q->where('user_name', 'like', '%' . $this->searchName . '%')
-                )->orWhereHas('recipient', fn($q) =>
-                    $q->where('user_name', 'like', '%' . $this->searchName . '%')
-                );
+        $query->where(function ($q) {
+            $q->where('user_one_id', auth()->user()->id)
+            ->orWhere('user_two_id', auth()->user()->id);
+        });
+
+        if ($this->searchName) {
+            $search = '%' . $this->searchName . '%';
+            $query->where(function($q) use ($search) {
+                $q->whereHas('initiator', function($q) use ($search) {
+                    $q->where('user_name', 'like', $search);
+                })
+                ->orWhereHas('recipient', function($q) use ($search) {
+                    $q->where('user_name', 'like', $search);
+                });
             });
         }
 
-        $query->where('user_one_id', auth()->user()->id)->orWhere('user_two_id', auth()->user()->id);
         $query->orderBy('updated_at', 'desc');
         $this->chats = $query->get();
 
-        Message::where('conversation_id',$this->convId)
-        ->where('sender_id','!=',$this->userId)
-        ->where('read_receiver',false)
-        ->update([
-            'read_receiver'=>true
-        ]);
+        Message::where('conversation_id', $this->convId)
+            ->where('sender_id', '!=', $this->userId)
+            ->where('read_receiver', false)
+            ->update([
+                'read_receiver' => true
+            ]);
 
         return view('livewire.chat-bar', [
-                        'chats'=>$this->chats
-                    ]);
+            'chats' => $this->chats
+        ]);
     }
+
 
     public function receiveMessage($payload){
         if($this->convId == $payload['convId']){

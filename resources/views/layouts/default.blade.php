@@ -15,6 +15,9 @@
             <a class="navbar-brand" href="{{ route('lobby.index') }}">
                 <i class="bi bi-chat-dots-fill fs-4"></i>
             </a>
+            <button class="d-block d-md-none btn btn-dark border-success" type="button" data-bs-toggle="offcanvas" data-bs-target="#chats">
+                <i class="bi bi-chat"> Chats</i>
+            </button>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbar" aria-controls="topNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

@@ -1,4 +1,4 @@
-<div class="col-md-9 d-flex flex-column h-100 p-0">
+<div class="col-12 col-md-9 d-flex flex-column h-100 p-0">
     @if($messages)
         <div class="border-bottom d-flex align-items-center p-3">
             <img src="https://i.pravatar.cc/40" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
@@ -17,7 +17,7 @@
                         <div class="@if($message->sender_id == auth()->user()->id) bg-success @else bg-dark @endif text-white p-2 rounded">
                             <div>
                                 @if($message->type == 'image')
-                                    <img src="{{ asset('storage/'.$message->media_path) }}" class="img-fluid rounded mt-2" style="max-width: 300px;">
+                                    <img src="{{ asset('storage/'.$message->media_path) }}" class="img-fluid rounded mt-2 mb-2" style="max-width: 300px;">
                                 @elseif($message->type == 'video')
                                     <video class="img-fluid rounded mt-2" controls style="max-width: 300px;">
                                         <source src="{{ asset('storage/' . $message->media_path) }}" type="video/mp4">
@@ -38,13 +38,7 @@
                                                 <div class="audio-progress bg-success rounded-3" style="height: 100%; width: 0%;" id="audioProgress"></div>
                                             </div>
                                         </div>
-
-                                        <div class="d-flex justify-content-around mt-2">
-                                            <span id="currentTime">00:00</span> / <span id="totalDuration">00:00</span>
-                                        </div>
                                     </div>
-
-
                                     <script>
                                         let audioPlayer = document.getElementById('audioPlayer');
                                         let playPauseBtn = document.getElementById('playPauseBtn');
@@ -88,13 +82,18 @@
                                     </script>
                                 @endif
                             </div>
-                            <div class="text-break" style="max-width: 300px">
-                                {!! \Illuminate\Support\Str::of($message->body)->replaceMatches(
-                                    '/(https?:\/\/[^\s]+)/',
-                                    fn ($match) => '<a href="' . $match[0] . '" target="_blank" class="text-primary text-decoration-underline">' . $match[0] . '</a>'
-                                ) !!}
-                            </div>
+                            <div class="d-flex justify-content-between gap-3">
+                                <div class="text-break" style="max-width: 300px">
+                                    {!! \Illuminate\Support\Str::of($message->body)->replaceMatches(
+                                        '/(https?:\/\/[^\s]+)/',
+                                        fn ($match) => '<a href="' . $match[0] . '" target="_blank" class="text-primary text-decoration-underline">' . $match[0] . '</a>'
+                                    ) !!}
+                                </div>
 
+                                <div>
+                                    <span style="font-size: 12px">{{ $message->created_at->format('H:i') }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
